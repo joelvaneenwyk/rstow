@@ -1,10 +1,12 @@
 [![Build Status](https://travis-ci.org/qboileau/rstow.svg?branch=master)](https://travis-ci.org/qboileau/rstow)
 
 # rstow
+
 Custom stow implementation in Rust
 
 ## Usage
-```
+
+```log
 rstow
 Like stow but simpler and with more crabs
 
@@ -19,7 +21,7 @@ FLAGS:
     -u, --unstow       Un-stow a target path from source (will remove symlinks and rename re-use backup files if exist)
     -V, --version      Prints version information
     -v, --verbosity    Pass many times for more log output
-                       
+
                        By default, it'll only report errors. Passing `-v` one time also prints warnings, `-vv` enables
                        info logging, `-vvv` debug, and `-vvvv` trace.
 
@@ -28,8 +30,10 @@ OPTIONS:
     -t, --target <target>    Target directory
 ```
 
-## Exemple
+## Example
+
 Stow from `./dotfiles/home` folder to actual user home folder
+
 ```sh
 rstow --force --backup --source ./dotfiles/home --target $HOME -vv
 ```
