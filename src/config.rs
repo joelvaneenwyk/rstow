@@ -44,7 +44,7 @@ pub(crate) fn read_config_file(directory: &Path) -> Option<RstowConfig> {
     match toml::from_str(content.as_str()) {
         Ok(conf) => Some(conf),
         Err(error) => {
-            debug!("Unable to read rstow configuration file in {} : {}", directory.display(), error.description());
+            debug!("Unable to read rstow configuration file in {} : {}", directory.display(), error.to_string());
             None
         }
     }

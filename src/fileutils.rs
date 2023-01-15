@@ -6,12 +6,15 @@ use std::io::{Error, ErrorKind};
 use std::fs::{self};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
-use std::os::unix::fs::symlink;
+
+use std::os::windows::fs::{symlink_dir, symlink_file};
+
+// use std::os::unix::fs::symlink;
 
 pub(crate) fn create_symlink(source_path: &Path, target_path: &Path) -> io::Result<()> {
     if cfg!(target_family = "unix") {
         info!("create symbolic link {} -> {}", source_path.display(), target_path.display());
-        symlink(source_path, target_path)
+        symlink_file(source_path, target_path)
     } else {
         Err(Error::new(ErrorKind::Other, "OS not supported"))
     }
@@ -90,4 +93,3 @@ pub(crate) fn break_directory_link(directory: &Path) -> io::Result<()> {
 
     Ok(())
 }
-
