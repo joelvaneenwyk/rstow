@@ -4,4 +4,4 @@
 
 tasks:
   - init: cargo build
-    command: cargo watch -x build
+    command: cargo watch -x build --target x86_64-unknown-linux-gnu
