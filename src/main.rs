@@ -7,6 +7,8 @@ extern crate failure;
 #[macro_use] extern crate serde_derive;
 extern crate toml;
 extern crate structopt;
+extern crate once_cell;
+extern crate symlink;
 
 use quicli::prelude::*;
 use structopt::StructOpt;

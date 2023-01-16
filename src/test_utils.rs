@@ -1,20 +1,28 @@
+use std::clone::Clone;
+use std::collections::HashMap;
 use super::*;
-use std::fs::*;
+use std::fs::{create_dir_all, File};
 use std::panic;
 use std::io::Result;
+use std::env;
+use std::sync::Mutex;
+use once_cell::*;
+use once_cell::sync::Lazy;
 
-pub const TESTS_DIRECTORY: &'static str = "/tmp/rstow-tests";
+static TESTS_DIRECTORY: Lazy<PathBuf> = Lazy::new(|| {
+    return env::temp_dir().as_path().to_owned().join("rstow-tests").as_path().to_owned();
+});
 
 pub fn build_source_directory(name: &str) -> Result<PathBuf> {
     println!("Create test source directory");
-    let source: PathBuf = PathBuf::from(TESTS_DIRECTORY.to_owned() + "/" + name).join("source");
+    let source: PathBuf = TESTS_DIRECTORY.join(name).join("source");
     create_dir_all(source.as_path())?;
     Ok(source)
 }
 
 pub fn build_target_directory(name: &str) -> Result<PathBuf> {
     println!("Create test target directory");
-    let target: PathBuf = PathBuf::from(TESTS_DIRECTORY.to_owned() + "/" + name).join("target");
+    let target: PathBuf = TESTS_DIRECTORY.join(name).join("target");
     create_dir_all(target.as_path())?;
     Ok(target)
 }
@@ -41,7 +49,7 @@ pub fn add_directory_to(name: &str, path: &Path) -> Result<PathBuf> {
 
 pub fn with_test_directories(name: &str, test: impl FnOnce(&PathBuf, &PathBuf) -> () + std::panic::UnwindSafe) -> Result<()>  {
 
-    let test_dir = PathBuf::from(TESTS_DIRECTORY.to_owned() + "/" + name);
+    let test_dir = TESTS_DIRECTORY.join(name);
     let source: PathBuf = build_source_directory(name).unwrap();
     let target: PathBuf = build_target_directory(name).unwrap();
 

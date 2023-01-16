@@ -7,26 +7,11 @@ use std::fs::{self};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
-#[cfg(not(target_os = "windows"))]
-use std::os::unix::fs::symlink;
+use symlink::{symlink_dir, symlink_file, remove_symlink_auto};
 
-#[cfg(not(target_os = "windows"))]
-pub(crate) fn create_symlink(source_path: &Path, target_path: &Path) -> io::Result<()> {
-    if cfg!(target_family = "unix") {
-        info!("create symbolic link {} -> {}", source_path.display(), target_path.display());
-        symlink(source_path, target_path)
-    } else {
-        Err(Error::new(ErrorKind::Other, "OS not supported"))
-    }
-}
-
-#[cfg(target_os = "windows")]
-use std::os::windows::fs::{symlink_dir, symlink_file};
-
-#[cfg(target_os = "windows")]
 pub(crate) fn create_symlink(source_path: &Path, target_path: &Path) -> io::Result<()> {
     info!("create symbolic link {} -> {}", source_path.display(), target_path.display());
-    if (source_path.is_dir()) {
+    if source_path.is_dir() {
         symlink_dir(source_path, target_path)
     } else {
         symlink_file(source_path, target_path)
@@ -57,7 +42,10 @@ pub(crate) fn restore_path(backup: &Path, target: &Path) -> io::Result<()> {
 }
 
 pub(crate) fn delete_path(path: &Path) -> io::Result<()> {
-    if path.is_dir() {
+    if is_symlink(path) {
+        info!("delete symlink {}", path.display());
+        remove_symlink_auto(path)
+    } else if path.is_dir() {
         info!("delete directory recursively {}", path.display());
         fs::remove_dir_all(path)
     } else {
