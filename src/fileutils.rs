@@ -26,7 +26,7 @@ use std::os::windows::fs::{symlink_dir, symlink_file};
 #[cfg(target_os = "windows")]
 pub(crate) fn create_symlink(source_path: &Path, target_path: &Path) -> io::Result<()> {
     info!("create symbolic link {} -> {}", source_path.display(), target_path.display());
-    if (source_path.is_dir()) {
+    if source_path.is_dir() {
         symlink_dir(source_path, target_path)
     } else {
         symlink_file(source_path, target_path)

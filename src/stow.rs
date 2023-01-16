@@ -12,6 +12,8 @@ use errors::*;
 use operations::*;
 use config::{read_config_file, RstowConfig};
 
+use log::{log, Level};
+
 pub(crate) fn stow_path<'a>(
     source_path: &'a Path,
     target_path: &'a Path,

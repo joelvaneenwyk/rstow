@@ -6,6 +6,9 @@ extern crate failure;
 #[macro_use] extern crate failure_derive;
 #[macro_use] extern crate serde_derive;
 extern crate toml;
+#[macro_use] extern crate log;
+
+extern crate structopt;
 
 use quicli::prelude::*;
 use im::vector::*;
@@ -35,6 +38,7 @@ use operations::*;
 use errors::*;
 use toml::value::Array;
 use config::RstowConfig;
+use structopt::StructOpt;
 
 /// Like stow but simpler and with more crabs
 #[derive(Debug, StructOpt)]
@@ -176,3 +180,5 @@ fn apply(operations: &Vector<Result<FSOperation, AppError>>, dryrun: bool) -> Re
         }
     }
 }
+
+fn main() {}
