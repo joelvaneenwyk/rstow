@@ -6,8 +6,10 @@ extern crate failure;
 #[macro_use] extern crate failure_derive;
 #[macro_use] extern crate serde_derive;
 extern crate toml;
+extern crate structopt;
 
 use quicli::prelude::*;
+use structopt::StructOpt;
 use im::vector::*;
 use failure::Error;
 use failure::ResultExt;
@@ -64,10 +66,14 @@ struct Cli {
     verbosity: Verbosity,
 }
 
+fn main() -> CliResult {
+    let args = Cli::from_args();
+    args.verbosity.setup_env_logger("head")?;
 
-main!(|args: Cli, log_level: verbosity| {
-   program(&args);
-});
+    program(&args);
+
+    Ok(())
+}
 
 /// Program execution follow 3 steps :
 /// 1- Extract and verify inputs (provided `source` and `target` became absolute paths)
