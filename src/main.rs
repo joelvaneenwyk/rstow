@@ -62,13 +62,13 @@ struct Cli {
     #[structopt(long = "unstow", short = "u")]
     unstow: bool,
     // Quick and easy logging setup you get for free with quicli
-    #[structopt(flatten)]
-    verbosity: Verbosity,
+    //#[structopt(flatten)]
+    //verbosity: Verbosity,
 }
 
 fn main() -> CliResult {
     let args = Cli::from_args();
-    args.verbosity.setup_env_logger("head")?;
+    //args.verbosity.setup_env_logger("head")?;
 
     program(&args);
 
