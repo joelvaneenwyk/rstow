@@ -8,28 +8,33 @@ use std::env;
 use std::sync::Mutex;
 use once_cell::*;
 use once_cell::sync::Lazy;
+use tempfile::{tempdir, tempfile};
 
-static TESTS_DIRECTORY: Lazy<PathBuf> = Lazy::new(|| {
-    return env::temp_dir().as_path().to_owned().join("rstow-tests").as_path().to_owned();
-});
+pub fn _create_test_directory(path1: &str, path2: &str) -> Result<PathBuf> {
+    let temp_dir: PathBuf = tempdir().unwrap().path().to_owned();
+    let source: PathBuf = temp_dir.join(path1).join(path2);
+    Ok(source)
+}
 
 pub fn build_source_directory(name: &str) -> Result<PathBuf> {
     println!("Create test source directory");
-    let source: PathBuf = TESTS_DIRECTORY.join(name).join("source");
+    let source: PathBuf = _create_test_directory(name, "source")?;
     create_dir_all(source.as_path())?;
     Ok(source)
 }
 
 pub fn build_target_directory(name: &str) -> Result<PathBuf> {
     println!("Create test target directory");
-    let target: PathBuf = TESTS_DIRECTORY.join(name).join("target");
+    let target: PathBuf = _create_test_directory(name, "target")?;
     create_dir_all(target.as_path())?;
     Ok(target)
 }
 
 pub fn clear_directory(path: &Path) -> Result<()> {
     println!("Clean test directory {}", path.display());
-    if path.exists() { remove_dir_all(path).unwrap() }
+    if path.exists() {
+        remove_dir_all(path).unwrap()
+    }
     Ok(())
 }
 
@@ -47,9 +52,7 @@ pub fn add_directory_to(name: &str, path: &Path) -> Result<PathBuf> {
     Ok(dir_path)
 }
 
-pub fn with_test_directories(name: &str, test: impl FnOnce(&PathBuf, &PathBuf) -> () + std::panic::UnwindSafe) -> Result<()>  {
-
-    let test_dir = TESTS_DIRECTORY.join(name);
+pub fn with_test_directories(name: &str, test: impl FnOnce(&PathBuf, &PathBuf) -> () + std::panic::UnwindSafe) -> Result<()> {
     let source: PathBuf = build_source_directory(name).unwrap();
     let target: PathBuf = build_target_directory(name).unwrap();
 
@@ -57,7 +60,10 @@ pub fn with_test_directories(name: &str, test: impl FnOnce(&PathBuf, &PathBuf) -
         test(&source, &target);
     });
 
-    clear_directory(test_dir.as_path()).unwrap();
-    assert!(result.is_ok());
+    clear_directory(source.as_path()).unwrap();
+    clear_directory(target.as_path()).unwrap();
+
+    assert!(result.is_ok(), "Test failed. {}", name);
+
     Ok(())
 }

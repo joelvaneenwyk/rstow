@@ -1,4 +1,4 @@
-
+use std::borrow::Borrow;
 use quicli::prelude::*;
 
 use std::io;
@@ -7,10 +7,15 @@ use std::fs::{self};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
-use symlink::{symlink_dir, symlink_file, remove_symlink_auto};
+#[cfg(unix)]
+use crate::os::unix::fs::symlink as symlink_dir;
+#[cfg(unix)]
+use crate::os::unix::fs::symlink as symlink_file;
+#[cfg(windows)]
+use std::os::windows::fs::{symlink_dir, symlink_file};
 
 pub(crate) fn create_symlink(source_path: &Path, target_path: &Path) -> io::Result<()> {
-    info!("create symbolic link {} -> {}", source_path.display(), target_path.display());
+    println!("create symbolic link {} -> {}", source_path.display(), target_path.display());
     if source_path.is_dir() {
         symlink_dir(source_path, target_path)
     } else {
@@ -18,8 +23,9 @@ pub(crate) fn create_symlink(source_path: &Path, target_path: &Path) -> io::Resu
     }
 }
 
-pub(crate) fn build_backup_path(path: &Path) ->io::Result<PathBuf> {
-    let file_name = path.file_name()
+pub(crate) fn build_backup_path(path: &Path) -> io::Result<PathBuf> {
+    let file_name = path
+        .file_name()
         .and_then(|x: &OsStr| x.to_str())
         .expect("Unable to get filename");
 
@@ -42,10 +48,7 @@ pub(crate) fn restore_path(backup: &Path, target: &Path) -> io::Result<()> {
 }
 
 pub(crate) fn delete_path(path: &Path) -> io::Result<()> {
-    if is_symlink(path) {
-        info!("delete symlink {}", path.display());
-        remove_symlink_auto(path)
-    } else if path.is_dir() {
+    if path.is_dir() {
         info!("delete directory recursively {}", path.display());
         fs::remove_dir_all(path)
     } else {
@@ -55,16 +58,19 @@ pub(crate) fn delete_path(path: &Path) -> io::Result<()> {
 }
 
 pub(crate) fn is_symlink(path: &Path) -> bool {
-    match path.symlink_metadata() {
+    match fs::symlink_metadata(path.as_os_str()) {
         Ok(data) => data.file_type().is_symlink(),
-        Err(_e) => false
+        Err(_e) => false,
     }
 }
 
 pub(crate) fn check_symlink(symlink_path: &Path, valid_dest: &Path) -> bool {
     match get_symlink_target(symlink_path) {
-        Some(target) => valid_dest.eq(target.as_path()),
-        None => false
+        Some(target) => valid_dest
+            .canonicalize()
+            .unwrap()
+            .eq(target.canonicalize().unwrap().as_path()),
+        None => false,
     }
 }
 
@@ -88,7 +94,12 @@ pub(crate) fn break_directory_link(directory: &Path) -> io::Result<()> {
     let source_paths = fs::read_dir(target.as_path())?;
     for src_dir_entry in source_paths {
         let source_child = src_dir_entry?.path();
-        let target_child = target.join(source_child.as_path().file_name().expect("Unable to get path filename"));
+        let target_child = target.join(
+            source_child
+                .as_path()
+                .file_name()
+                .expect("Unable to get path filename"),
+        );
         create_symlink(source_child.as_path(), target_child.as_path())?;
     }
 
